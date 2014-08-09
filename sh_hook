@@ -1,0 +1,16 @@
+# To install the hook just source this file: source sh_hook
+
+qcd ()
+{
+    installation_path="$HOME/qcd"
+    script="$installation_path/qcd.py"    
+
+    output=`$script $@`
+
+    words=`echo $output | wc -w`
+    
+    if [ $words -eq 1 ];
+    then
+        cd $output
+    fi
+}

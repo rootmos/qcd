@@ -35,7 +35,7 @@ def initialize_database (writeable = False):
     file = expanduser (file_option.value)
 
     if not writeable and not isfile(file):
-        print "Database is empty! Try adding something!"
+        print >> sys.stderr, "Database is empty! Try adding something!"
         sys.exit (1)
 
     if writeable:
@@ -56,7 +56,7 @@ def getAnonymousKey (db):
         i += 1
 
 def syntaxError (info = ""):
-    print "Syntax error!" + info
+    print >> sys.stderr, "Syntax error!" + info
     parser.usage ()
     sys.exit (2)
 
@@ -93,7 +93,7 @@ def change (args):
     db = initialize_database (True)
 
     if not args[0] in db:
-        print args[0] + " does not exist in the database."
+        print >> sys.stderr, args[0] + " does not exist in the database."
         close_database (db)
         sys.exit (1)
 
@@ -108,12 +108,12 @@ def move(args):
     db = initialize_database (True)
 
     if not args[0] in db:
-        print args[0] + " does not exist in the database."
+        print >> sys.stderr, args[0] + " does not exist in the database."
         close_database (db)
         sys.exit (1)
 
     if args[1] in db:
-        print args[1] + " already exist in the database."
+        print >> sys.stderr, args[1] + " already exist in the database."
         close_database (db)
         sys.exit (1)
 
@@ -132,7 +132,7 @@ def delete (args):
     try:
         del db[args[0]]
     except:
-        print args[0] + " does not exist in the database."
+        print >> sys.stderr, args[0] + " does not exist in the database."
         close_database (db)
         sys.exit (1)
 
@@ -144,7 +144,7 @@ def list (args):
 
     db = initialize_database ()
     for k, v in sorted (db.iteritems()):
-        print k + "\t" + v
+        print >> sys.stderr, k + "\t" + v
     close_database (db)
 
 
@@ -157,7 +157,7 @@ def get (args):
     try:
         print db[args[0]]
     except:
-        print args[0] + " does not exist in the database."
+        print >> sys.stderr, args[0] + " does not exist in the database."
         close_database (db)
         sys.exit (1)
 

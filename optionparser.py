@@ -37,7 +37,7 @@ class Option:
 
     def describe (self):
         """Method for making the option describe itself"""
-        print "-" + self.option + ", --" + self.long_option + "\t" + self.description
+        print >> sys.stderr, "-" + self.option + ", --" + self.long_option + "\t" + self.description
 
     def __eq__ (self, other):
         """Overloaded comparison with a string. Will compare for -short_name and --long_name"""
@@ -125,16 +125,16 @@ class OptionParser:
         if self.has (Command):
             usage_line += " [COMMANDS]..."
 
-        print usage_line
+        print >> sys.stderr, usage_line
 
         if self.has (Configuration):
-            print "\nConfiguration options:"
+            print >> sys.stderr, "\nConfiguration options:"
             for o in self.options:
                 if isinstance (o, Configuration):
                     o.describe ()
 
         if self.has (Command):
-            print "\nAvailable commands:"
+            print >> sys.stderr, "\nAvailable commands:"
             for o in self.options:
                 if isinstance (o, Command):
                     o.describe ()
@@ -155,7 +155,7 @@ class OptionParser:
             opts, remaining = getopt.getopt (sys.argv[1:], optstr, longopts)
         except getopt.GetoptError as err:
             # Handle a syntax error
-            print str (err)
+            print >> sys.stderr, str (err)
             self.usage ()
             sys.exit (2)
 
@@ -181,7 +181,7 @@ class OptionParser:
 
         # No default command, we don't know what to do!
 
-        print "No command was specified."
+        print >> sys.stderr, "No command was specified."
         self.usage ()
         sys.exit (2)
 
