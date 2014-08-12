@@ -22,41 +22,74 @@ __license__ = "GPL"
 __version__ = "0.1"
 __status__ = "Development"
 
-from itertools import repeat
+from itertools import repeat,izip_longest
 from math import trunc
 from sys import stdout
 
-def format (grid, tabstop = 4):
-    # Save the length of the elements in the grid
-    lengths = map ( lambda row: map ( len, row), grid )
+def grid_lengths (grid):
+    return map ( lambda row: map ( len, row), grid )
 
-    # Calculate the required length of the columns
-    widths = map (max, zip(*lengths))
 
-    # Fill the columns to the next tabstop
-    widths = map (lambda width: ( trunc (width/tabstop) + 1) * tabstop, widths)
+class Formater:
+    """Class for applying a uniform alignment to different tables."""
 
-    # Iterate through the grid and make formated rows
-    formated = []
-    for i, row in enumerate (grid):
-        formated.insert(i, "")
-        row_length = len (row) - 1 # Minus one since the lists are zero-indexed
-        for j, element in enumerate (row):
-            # Add the element...
-            formated[i] += element
+    def __init__ (self, tabstop = 4):
+        self.tabstop = tabstop
+        self.widths = []
 
-            # ... and if we are not at the last column...
-            if j < row_length:
-                # ... then we fill the rest with spaces
-                fill = widths[j] - lengths[i][j]
-                for _ in repeat (None, fill):
-                    formated[i] += " "
 
-    return formated
+    def align (self, grid):
+        # Save the length of the elements in the grid
+        lengths = grid_lengths (grid)
+
+        # Calculate the required length of the columns
+        widths = map (max, zip(*lengths))
+
+        # Fill the columns to the next tabstop
+        widths = map (lambda width:
+                        ( trunc (width/ self.tabstop) + 1) * self.tabstop,
+                      widths)
+
+        # Check whether or not the saved widths are larger and save the result
+        self.widths = max (widths, self.widths)
+
+
+
+    def format (self, grid):
+        # Save the length of the elements in the grid
+        lengths = grid_lengths (grid)
+
+        # Iterate through the grid and make formated rows
+        formated = []
+        for i, row in enumerate (grid):
+            formated.insert(i, "")
+            row_length = len (row) - 1 # Minus one since the lists are zero-indexed
+            for j, element in enumerate (row):
+                # Add the element...
+                formated[i] += element
+
+                # ... and if we are not at the last column...
+                if j < row_length:
+                    # ... then we fill the rest with spaces
+                    fill = self.widths[j] - lengths[i][j]
+                    for _ in repeat (None, fill):
+                        formated[i] += " "
+
+        return formated
+
+
+
+    def write (self, grid, writeable = stdout):
+        formated = self.format (grid)
+
+        for row in formated:
+            writeable.write (row + '\n')
+
+
 
 def write (grid, tabstop = 4, writeable = stdout):
-    formated = format (grid, tabstop)
-
-    for row in formated:
-        writeable.write (row + '\n')
+    """A one shot formater."""
+    formater = Formater (tabstop)
+    formater.align (grid)
+    formater.write (grid)
 

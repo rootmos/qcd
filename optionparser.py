@@ -43,14 +43,14 @@ class Option:
     def describe (self):
         """Method for making the option describe itself"""
         columns = []
-        
+
         if len (self.syntax) > 0:
             columns.append ("-" + self.option + ", --" + self.long_option + ":")
             columns.append ("-" + self.option + " " + self.syntax)
         else:
             columns.append ("-" + self.option + ", --" + self.long_option)
             columns.append ("")
-        
+
         columns.append (self.description)
         return columns
 
@@ -133,33 +133,44 @@ class OptionParser:
     def usage (self):
         """Compile and print the usage information"""
 
-        tabstop = 4 
+        # Initiaize the formater
+        tabstop = 4
+        formater = tabularize.Formater (tabstop)
 
+        # Obtain the config options and align the formater
+        configs = []
+        for o in self.options:
+            if isinstance (o, Configuration):
+                configs.append(o.describe ())
+        formater.align (configs)
+
+        # Obtain the commands and align the formater
+        commands = []
+        for o in self.options:
+            if isinstance (o, Command):
+                commands.append  (o.describe ())
+        formater.align (commands)
+
+        # Start writing the usage line
         usage_line = "Usage: " + self.name
 
-        if self.has (Configuration):
+        if len (configs) > 0:
             usage_line += " [OPTIONS]..."
 
-        if self.has (Command):
+        if len (commands) > 0:
             usage_line += " [COMMANDS]..."
 
         print >> sys.stderr, usage_line
 
-        if self.has (Configuration):
+        # Write the configs
+        if len (configs) > 0:
             print >> sys.stderr, "\nConfiguration options:"
-            output = []
-            for o in self.options:
-                if isinstance (o, Configuration):
-                    output.append(o.describe ())
-            tabularize.write (output, tabstop, writeable = sys.stderr)
+            formater.write (configs, writeable = sys.stderr)
 
+        # Write the commands
         if self.has (Command):
             print >> sys.stderr, "\nAvailable commands:"
-            output = []
-            for o in self.options:
-                if isinstance (o, Command):
-                    output.append  (o.describe ())
-            tabularize.write (output, tabstop, writeable = sys.stderr)
+            formater.write (commands, writeable = sys.stderr)
 
     def parse (self):
         """Do the parsing of arguments passed on the command line"""
