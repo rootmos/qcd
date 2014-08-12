@@ -23,6 +23,7 @@ import anydbm
 from optionparser import OptionParser, Command, Configuration
 import sys
 
+import tabularize
 
 # Global configuration parameters
 name = "qcd"
@@ -143,8 +144,7 @@ def list (args):
         syntaxError ()
 
     db = initialize_database ()
-    for k, v in sorted (db.iteritems()):
-        print >> sys.stderr, k + "\t" + v
+    tabularize.write (sorted (db.iteritems()), writeable = sys.stderr)
     close_database (db)
 
 
@@ -168,32 +168,41 @@ def get (args):
 parser = OptionParser (name)
 
 # The options
-file_option = Configuration ("f", "file", "Specifies which database to use", default_db_file)
+file_option = Configuration ("f", "file", "Specifies which database to use",
+        default_db_file, syntax = "FILENAME")
 parser.add (file_option)
 
 # The commands
-help_command = Command ("h", "help", "Prints this helpful message", lambda args:parser.usage ())
+help_command = Command ("h", "help", "Prints this helpful message",
+        lambda args:parser.usage ())
 parser.add (help_command)
 
-add_command = Command ("a", "add", "Add a new entry into the database", add)
+add_command = Command ("a", "add", "Add a new entry into the database", add,
+        syntax = "[LABEL] PATH")
 parser.add (add_command)
 
-save_command = Command ("s", "save", "Add current path into the database", save)
+save_command = Command ("s", "save", "Add current path into the database",
+        save, syntax = "[LABEL]")
 parser.add (save_command)
 
-move_command = Command ("m", "move", "Rename an entry in the database", move)
+move_command = Command ("m", "move", "Rename an entry in the database", move,
+        syntax = "FROM TO")
 parser.add (move_command)
 
-change_command = Command ("c", "change", "Changes the path of an entry in the database", change)
+change_command = Command ("c", "change",
+    "Changes the path of an entry in the database", change,
+    syntax = "LABEL NEW_PATH")
 parser.add (change_command)
 
-delete_command = Command ("d", "delete", "Delete an entry from the database", delete)
+delete_command = Command ("d", "delete", "Delete an entry from the database",
+        delete, syntax = "LABEL")
 parser.add (delete_command)
 
 list_command = Command ("l", "list", "List the entries in the database", list)
 parser.add (list_command)
 
-retrieve_command = Command ("g", "get", "Retrieve an entry from the database", get, True)
+retrieve_command = Command ("g", "get", "Retrieve an entry from the database",
+        get, True, syntax = "LABEL")
 parser.add (retrieve_command)
 
 

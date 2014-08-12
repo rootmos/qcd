@@ -26,18 +26,33 @@ import getopt
 import inspect
 import sys
 
+import tabularize
+
 class Option:
     """The base class for an option"""
 
-    def __init__ (self, short_name, long_name, description):
+    def __init__ (self, short_name, long_name, description, syntax = ""):
         """The constructor: specify names, short and long, and a description of the option."""
         self.option = short_name
         self.long_option = long_name
         self.description = description
+        self.syntax = syntax
+
+
 
     def describe (self):
         """Method for making the option describe itself"""
-        print >> sys.stderr, "-" + self.option + ", --" + self.long_option + "\t" + self.description
+        columns = []
+        
+        if len (self.syntax) > 0:
+            columns.append ("-" + self.option + ", --" + self.long_option + ":")
+            columns.append ("-" + self.option + " " + self.syntax)
+        else:
+            columns.append ("-" + self.option + ", --" + self.long_option)
+            columns.append ("")
+        
+        columns.append (self.description)
+        return columns
 
     def __eq__ (self, other):
         """Overloaded comparison with a string. Will compare for -short_name and --long_name"""
@@ -61,9 +76,9 @@ class Option:
 class Command(Option):
     """An option which when set calls the callback provided."""
 
-    def __init__ (self, option, long_option, description, callback, is_default = False):
+    def __init__ (self, option, long_option, description, callback, is_default = False, syntax = ""):
         """Contructor asking for names, description and a callback"""
-        Option.__init__ (self, option, long_option, description)
+        Option.__init__ (self, option, long_option, description, syntax)
         self.callback = callback
         self.is_default = is_default
 
@@ -75,9 +90,9 @@ class Command(Option):
 class Configuration(Option):
     """An option which stores the parameter passed on the command line"""
 
-    def __init__ (self, option, long_option, description, default):
+    def __init__ (self, option, long_option, description, default, syntax = ""):
         """Contructor asking for names, description and the default (and initial) value of this option"""
-        Option.__init__ (self, option, long_option, description)
+        Option.__init__ (self, option, long_option, description, syntax)
         self.value = default
 
     def do (self, arg):
@@ -117,6 +132,9 @@ class OptionParser:
 
     def usage (self):
         """Compile and print the usage information"""
+
+        tabstop = 4 
+
         usage_line = "Usage: " + self.name
 
         if self.has (Configuration):
@@ -129,15 +147,19 @@ class OptionParser:
 
         if self.has (Configuration):
             print >> sys.stderr, "\nConfiguration options:"
+            output = []
             for o in self.options:
                 if isinstance (o, Configuration):
-                    o.describe ()
+                    output.append(o.describe ())
+            tabularize.write (output, tabstop, writeable = sys.stderr)
 
         if self.has (Command):
             print >> sys.stderr, "\nAvailable commands:"
+            output = []
             for o in self.options:
                 if isinstance (o, Command):
-                    o.describe ()
+                    output.append  (o.describe ())
+            tabularize.write (output, tabstop, writeable = sys.stderr)
 
     def parse (self):
         """Do the parsing of arguments passed on the command line"""
