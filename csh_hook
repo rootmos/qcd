@@ -1,0 +1,6 @@
+# To install the hook just source this file: source csh_hook
+
+set qcd_installation_path="$HOME/qcd"
+setenv qcd_script "$qcd_installation_path/qcd.py"
+
+alias qcd 'set qcd_output=`$qcd_script \!*` && test -n $qcd_output && cd $qcd_output'
