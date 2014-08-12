@@ -91,5 +91,5 @@ def write (grid, tabstop = 4, writeable = stdout):
     """A one shot formater."""
     formater = Formater (tabstop)
     formater.align (grid)
-    formater.write (grid)
+    formater.write (grid, writeable)
 
